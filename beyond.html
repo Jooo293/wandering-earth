@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>流浪地球之外</title>
+<meta name="description" content="一段连贯的电影级 Three.js 旅程：从流浪地球的行星发动机出发，穿越太阳系与星际空间，直至整个银河系。">
+<meta name="theme-color" content="#02040a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/beyond.css">
+</head>
+<body class="cinematic">
+<canvas id="gl" tabindex="0" aria-label="从地球行星发动机到银河系的电影级三维旅程"></canvas>
+<div class="bars" aria-hidden="true"></div>
+
+<div id="loader" role="status" aria-live="polite">
+  <div class="ld-inner">
+    <div class="ld-kicker">联合政府 · 领航员空间站</div>
+    <div class="ld-title">流浪地球之外</div>
+    <div class="ld-bar"><i id="ld-fill"></i></div>
+    <div class="ld-status" id="ld-status">正在建立上行链路…</div>
+  </div>
+</div>
+
+<div id="start" class="screen">
+  <div class="sc-inner">
+    <div class="sc-kicker">流浪地球计划 · 第二部</div>
+    <h1 class="sc-title">流浪地球<br>之外</h1>
+    <div class="sc-sub">人类的远征：从将死的太阳驶向银河之海</div>
+    <div class="sc-actions">
+      <button class="cta" id="b-begin" type="button"><span class="cta-ico">▶</span><span>启程远航<small>电影自动播放 · 约 2 分半 · 请开启声音</small></span></button>
+      <button class="cta ghost" id="b-explore" type="button"><span>自由视角<small>从行星发动机一路飞向银河</small></span></button>
+    </div>
+    <div class="sc-hints"><span><kbd>滚轮</kbd> 穿越时间</span><span><kbd>拖动</kbd> 环顾四周</span><span><kbd>点击</kbd> 标记以聚焦</span><span><kbd>F</kbd> 自由视角</span></div>
+    <a class="sc-back" href="index.html">← 第一部 · 流浪地球计划</a>
+  </div>
+  <div class="sc-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="sc-tele" aria-hidden="true"><span><b class="dot"></b>联合政府 · 领航员空间站</span><span>太阳系第三行星 · 1.000 AU</span><span>2078 年</span><span>发动机 <b>0 / 10,000</b></span><span class="sc-wait">状态 · 等待点火</span></div>
+</div>
+
+<div id="card" aria-live="polite"><div class="cd-n" id="cd-n"></div><div class="cd-t" id="cd-t"></div><div class="cd-k" id="cd-k"></div></div>
+<div id="caption" aria-live="polite"></div>
+<div id="count" aria-hidden="true"><svg class="ct-ring" viewBox="0 0 200 200"><circle class="ct-track" cx="100" cy="100" r="92"/><circle class="ct-arc" cx="100" cy="100" r="92"/></svg><div class="ct-k">全球点火程序</div><div class="ct-n" id="ct-n"></div><div class="ct-s">一万台发动机 · 背阳半球 · 推力 1500 亿吨</div></div>
+<div id="hint"></div>
+
+<div id="hud">
+  <div id="brand"><div class="br-t">流浪地球之外</div><div class="br-s">人类的远征：从将死的太阳驶向银河之海</div></div>
+  <div id="data" class="glass">
+    <div class="g-head"><span class="dot"></span>导航遥测</div>
+    <div class="g-row"><span>发动机状态</span><b id="d-engine">—</b></div>
+    <div class="g-meter"><i id="d-engine-bar"></i></div>
+    <div class="g-row"><span>速度</span><b id="d-speed">—</b></div>
+    <div class="g-row"><span>距太阳</span><b id="d-dist">—</b></div>
+    <div class="g-row"><span>区域</span><b id="d-region">—</b></div>
+    <div class="g-row"><span>银道坐标</span><b id="d-coord">—</b></div>
+    <div class="g-row"><span>任务年份</span><b id="d-year">—</b></div>
+    <div class="g-row"><span>视野范围</span><b id="d-fov">—</b></div>
+  </div>
+  <div id="hotspots"></div>
+  <div id="info" class="glass"></div>
+  <div id="modes" class="glass" role="toolbar" aria-label="模式">
+    <button class="mb on" id="m-film" type="button" title="电影模式（空格键播放）"><i>▶</i>电影</button>
+    <button class="mb" id="m-explore" type="button" title="自由视角探索 (F)"><i>✥</i>探索</button>
+    <span class="sep"></span>
+    <button class="ib" id="b-sound" type="button" title="声音 (M)">♪</button>
+    <button class="ib" id="b-hud" type="button" title="隐藏仪表盘 (H)">◐</button>
+    <button class="ib" id="b-fs" type="button" title="全屏">⛶</button>
+  </div>
+  <aside id="dest" class="glass" aria-label="目的地">
+    <div class="g-head"><span class="dot"></span>目的地</div>
+    <div id="dest-list"></div>
+  </aside>
+  <div id="ladder" aria-hidden="true"><div class="ld-track"></div><div id="ld-marks"></div><div id="ld-cursor"><b id="ld-val">—</b></div></div>
+  <div id="dock" class="glass">
+    <button class="db" id="b-play" type="button" title="播放 / 暂停（空格）">▶</button>
+    <div id="segs"></div>
+    <span id="time">0:00</span>
+  </div>
+  <div id="xdock" class="glass">
+    <div class="x-row"><span class="x-l">航程</span><input id="voyage" type="range" min="0" max="146" step="0.1" value="0" aria-label="航程时间"><b id="voyage-y">2078</b></div>
+    <div class="x-row x-orb"><span class="x-l">轨道</span><span class="seg3"><button type="button" data-v="0" class="on">实时</button><button type="button" data-v="0.04">1 年 / 25 秒</button><button type="button" data-v="0.35">1 年 / 3 秒</button><button type="button" data-v="3">延时</button></span></div>
+    <div id="ruler" title="点击缩放到该尺度"><div class="r-track"></div><div id="r-marks"></div><div id="r-cursor"></div></div>
+    <div class="x-hint">拖动环绕 · 滚轮缩放（100 公里 至 10 万光年）· 点击标记或目的地即可飞往</div>
+  </div>
+</div>
+
+<div id="end" class="screen">
+  <div class="sc-inner">
+    <div class="sc-kicker">通讯结束 · 旅程仍在继续</div>
+    <h1 class="sc-title">流浪地球<br>之外</h1>
+    <div class="sc-sub">人类的远征：从将死的太阳驶向银河之海</div>
+    <div class="sc-actions">
+      <button class="cta" id="b-again" type="button"><span class="cta-ico">↺</span><span>再看一遍</span></button>
+      <button class="cta ghost" id="b-free2" type="button"><span>探索银河<small>自由视角</small></span></button>
+    </div>
+    <a class="sc-back" href="index.html">← 第一部 · 流浪地球计划</a>
+  </div>
+</div>
+
+<script src="js/boot.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "./vendor/three/build/three.module.js",
+  "three/addons/": "./vendor/three/examples/jsm/"
+} }
+</script>
+<script type="module" src="js/beyond/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>流浪地球计划 — 人类最后的旅程</title>
+<meta name="description" content="一场电影级的 Three.js 交互体验：行星发动机、太空电梯与深空文明，推动地球离开太阳系。">
+<meta name="theme-color" content="#02040a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body class="cinematic">
+<canvas id="scene" tabindex="0" aria-label="地球的交互式三维场景：行星发动机、太空电梯与轨道空间站"></canvas>
+<div class="bars" aria-hidden="true"></div>
+
+<div id="loader" role="status" aria-live="polite">
+  <div class="ld-inner">
+    <div class="ld-kicker">联合政府 · 2075</div>
+    <div class="ld-title">流浪地球计划</div>
+    <div class="ld-sub">人类最后的旅程</div>
+    <div class="ld-bar"><i id="ld-fill"></i></div>
+    <div class="ld-status" id="ld-status">正在建立上行链路…</div>
+  </div>
+</div>
+
+<div id="start" class="screen">
+  <div class="sc-inner">
+    <div class="sc-kicker">联合政府 · 行星推进指挥部</div>
+    <h1 class="sc-title">流浪地球计划</h1>
+    <div class="sc-sub">人类最后的旅程</div>
+    <div class="sc-actions">
+      <button class="cta" id="btn-watch" type="button"><span class="cta-ico">▶</span><span>观看旅程<small>1 分钟短片 · 请开启声音</small></span></button>
+      <button class="cta ghost" id="btn-explore" type="button"><span>自由探索<small>环绕、飞行，近距离查看每一座设施</small></span></button>
+      <a class="cta" href="beyond.html"><span class="cta-ico">★</span><span>重制版 · 流浪地球之外<small>全新完整体验：发动机、太阳系、银河系</small></span></a>
+    </div>
+  </div>
+</div>
+<div id="fade"></div>
+<div id="story" aria-live="polite">
+  <div id="st-card"><div class="stc-num" id="stc-num"></div><div class="stc-title" id="stc-title"></div><div class="stc-year" id="stc-year"></div></div>
+  <div id="st-title"><div class="stt-k">4.24 光年 · 2500 年</div><div class="stt-t">流浪地球计划</div><div class="stt-s">一百代人 · 一个家园</div></div>
+  <div id="st-sub"></div>
+  <div id="st-bar">
+    <button class="sb" id="sb-prev" type="button" title="上一章 (←)">◀◀</button>
+    <button class="sb" id="sb-play" type="button" title="播放 / 暂停 (空格)">❚❚ 暂停</button>
+    <button class="sb" id="sb-next" type="button" title="下一章 (→)">▶▶</button>
+    <div id="sb-track" title="跳转"><div id="sb-fill"></div><div id="sb-ticks"></div></div>
+    <span id="sb-time">0:00 / 0:00</span>
+    <button class="sb" id="sb-sound" type="button" title="声音 (M)">声音 开</button>
+    <button class="sb" id="sb-exit" type="button" title="退出并自由探索 (Esc)">✕ 退出</button>
+  </div>
+</div>
+<div id="end" class="screen">
+  <div class="sc-inner">
+    <div class="sc-kicker">通讯结束 · 旅程仍在继续</div>
+    <h1 class="sc-title">人类最后的旅程</h1>
+    <div class="sc-actions">
+      <button class="cta" id="btn-again" type="button"><span class="cta-ico">↺</span><span>再看一遍</span></button>
+      <button class="cta ghost" id="btn-explore2" type="button"><span>自由探索<small>亲自操控</small></span></button>
+      <a class="cta" href="beyond.html"><span class="cta-ico">▶</span><span>继续 · 第二部<small>流浪地球之外</small></span></a>
+    </div>
+  </div>
+</div>
+<div id="caption" aria-live="polite"><div class="c-kicker" id="cap-k"></div><div class="c-title" id="cap-t"></div><div class="c-sub" id="cap-s"></div></div>
+<div id="crosshair" aria-hidden="true"></div>
+<div id="tooltip"></div>
+<div id="markers" aria-hidden="true"></div>
+<div id="fp-touch"><button class="btn" id="fp-fwd" aria-label="向前推进">▲</button><button class="btn" id="fp-back" aria-label="向后推进">▼</button></div>
+
+<div id="hud">
+  <div class="panel" id="title-block">
+    <div class="t-kicker">联合政府 · 行星推进指挥部</div>
+    <div class="t-title">流浪地球计划</div>
+    <div class="t-sub">人类最后的旅程</div>
+    <div class="t-clock"><span>任务 <b id="h-day">T+0000 天</b></span><span>UTC <b id="h-utc">00:00:00</b></span></div>
+  </div>
+
+  <div id="hud-toggle-wrap">
+    <button class="btn" id="btn-hud" title="隐藏或显示仪表 (H)"><kbd>H</kbd>仪表</button>
+    <button class="btn" id="btn-fx" title="切换高级后期特效 (G)"><kbd>G</kbd>特效 高</button>
+  </div>
+
+  <section class="panel" id="orbit-panel" aria-label="当前轨道位置">
+    <div class="p-head"><span>轨道位置</span><span class="dot"></span></div>
+    <div class="rows">
+      <div class="row"><span>日心距离</span><span id="h-au">1.0000 AU</span></div>
+      <div class="row"><span>速度</span><span id="h-vel">0.00 km/s</span></div>
+      <div class="row"><span>阶段</span><span id="h-phase">逃逸加速</span></div>
+      <div class="row"><span>黄经 / 黄纬</span><span id="h-ecl">0.00° / 0.00°</span></div>
+      <div class="row"><span>地球自转</span><span id="h-rot">0.0°</span></div>
+    </div>
+    <svg id="orbit-svg" viewBox="0 0 290 118" aria-hidden="true">
+      <defs><radialGradient id="sunG"><stop offset="0" stop-color="#fff6d8"/><stop offset=".4" stop-color="#ffc46b"/><stop offset="1" stop-color="#ff8a3a" stop-opacity="0"/></radialGradient></defs>
+      <circle cx="70" cy="59" r="16" fill="url(#sunG)"/>
+      <circle cx="70" cy="59" r="30" fill="none" stroke="rgba(127,220,255,.25)" stroke-dasharray="2 4"/>
+      <circle cx="70" cy="59" r="96" fill="none" stroke="rgba(255,180,106,.25)" stroke-dasharray="2 4"/>
+      <path id="o-spiral" fill="none" stroke="rgba(127,220,255,.75)" stroke-width="1.2"/>
+      <circle id="o-jup" r="4.5" fill="#d9a46c"/>
+      <circle id="o-earth" r="3.6" fill="#7fdcff" style="filter:drop-shadow(0 0 4px #7fdcff)"/>
+      <text x="196" y="20" fill="rgba(220,239,255,.55)" font-family="Rajdhani, 'Microsoft YaHei', sans-serif" font-size="10" letter-spacing="1.5">航线 · 木星引力弹弓</text>
+    </svg>
+  </section>
+
+  <section class="panel" id="engine-panel" aria-label="发动机功率状态">
+    <div class="p-head"><span>行星发动机</span><b id="h-eng-state">推进中</b></div>
+    <div style="margin-top:12px" class="big"><span id="h-power">0.0</span><small>% 输出</small></div>
+    <div class="meter" id="h-meter"></div>
+    <div class="rows">
+      <div class="row"><span>运行台数</span><span id="h-active">0 / 0</span></div>
+      <div class="row"><span>总推力</span><span id="h-thrust">0</span></div>
+      <div class="row"><span>等离子核心</span><span id="h-core">0 K</span></div>
+      <div class="row"><span>燃料（重元素）</span><span id="h-fuel">0%</span></div>
+    </div>
+    <div class="sectors" id="h-sectors"></div>
+  </section>
+
+  <section class="panel" id="elevator-panel" aria-label="太空电梯状态">
+    <div class="p-head"><span>太空电梯</span><span class="dot"></span></div>
+    <div class="rows">
+      <div class="row"><span>锚点</span><span>赤道 · 0.0°N 22.0°E</span></div>
+      <div class="row"><span>顶端空间站</span><span id="h-apex">同步轨道锁定</span></div>
+      <div class="row"><span>上行轿厢</span><span id="h-up">0</span></div>
+      <div class="row"><span>下行轿厢</span><span id="h-down">0</span></div>
+      <div class="row"><span>缆绳张力</span><span id="h-tension">0%</span></div>
+      <div class="row"><span>下一班发车</span><span id="h-next">00:00</span></div>
+      <div class="row"><span>轨道交通</span><span id="h-traffic">0 艘</span></div>
+    </div>
+  </section>
+
+  <section class="panel" id="system-panel" aria-label="行星系统信息">
+    <div class="p-head"><span>行星系统</span><span class="dot amber"></span></div>
+    <div class="rows">
+      <div class="row"><span>目的地</span><span>比邻星 · 4.24 光年</span></div>
+      <div class="row"><span>木星交会</span><span id="h-jup">0 天</span></div>
+      <div class="row"><span>太阳辐射通量</span><span id="h-flux">100%</span></div>
+      <div class="row"><span>月球伴航</span><span>束缚 · 0.97</span></div>
+      <div class="row"><span>航程完成</span><span id="h-prog">0.000%</span></div>
+    </div>
+  </section>
+
+  <section class="panel" id="cam-panel" aria-label="镜头遥测">
+    <div class="p-head"><span>观测者</span><b id="h-mode">电影</b></div>
+    <div class="rows">
+      <div class="row"><span>焦点</span><span id="h-focus">地球</span></div>
+      <div class="row"><span>高度</span><span id="h-alt">0 km</span></div>
+      <div class="row"><span>距焦点</span><span id="h-range">0 km</span></div>
+      <div class="row"><span>渲染</span><span id="h-fps">— fps</span></div>
+    </div>
+  </section>
+
+  <nav id="dock" aria-label="镜头控制">
+    <div id="hint">拖动环绕 · 滚轮缩放 · 点击设施飞往该处 · F 第一人称 · J 观看旅程</div>
+    <div class="marks" id="marks"></div>
+    <div class="modes">
+      <button class="btn" data-mode="cinematic"><kbd>C</kbd>电影</button>
+      <button class="btn" data-mode="explore"><kbd>O</kbd>探索</button>
+      <button class="btn" data-mode="fp"><kbd>F</kbd>第一人称</button>
+      <button class="btn" id="btn-journey" type="button" title="以短片形式观看整个旅程"><kbd>J</kbd>▶ 旅程</button>
+    </div>
+  </nav>
+</div>
+
+<script src="js/boot.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "./vendor/three/build/three.module.js",
+  "three/addons/": "./vendor/three/examples/jsm/"
+} }
+</script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
